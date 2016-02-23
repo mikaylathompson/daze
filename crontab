@@ -1,0 +1,3 @@
+*/15 9-20 * * * export LC_ALL=en_US.UTF-8; /usr/local/bin/daze checktoday --cron 1 --log ~/.daze/ll.json && /usr/local/bin/daze add --log ~/.daze/ll.json > ~/.daze/cron.log 2>&1
+
+0 12 * * 5 NOW=$(date "+%Y-%m-%d"); cp ~/.daze/ll.json ~/.daze/backups/$NOW.json
