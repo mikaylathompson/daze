@@ -4,7 +4,7 @@ import json
 import sys
 
 
-locationLog = '/default/location/locationLog.json'
+locationLog = '/Users/mikayla/Code/sandbox/python/daze/newLocationLog.json'
 
 class Daze:
     def __init__(self, json):

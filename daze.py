@@ -1,6 +1,8 @@
 import click
 import dazeutils as d
 from datetime import date, timedelta
+import subprocess
+import sys
 
 
 @click.group()
@@ -33,11 +35,13 @@ def summary(log, month):
 
 
 @cli.command()
-@click.argument('place')
+@click.argument('place', required=False)
 @click.argument('strdate', required=False)
 @click.option('--log', type=click.Path(exists=True))
 def add(place, strdate, log):
     daze = loadLog(log)
+    if place is None:
+        place = getPlaceFromDialog()
     if strdate is None:
         strdate = date.today().isoformat()
     daze.add(strdate, place)
@@ -45,6 +49,19 @@ def add(place, strdate, log):
         d.dazeToFile(daze)
     else:
         d.dazeToFile(daze, log)
+
+@cli.command()
+@click.option('--cron')
+@click.option('--log', type=click.Path(exists=True))
+def checkToday(cron, log):
+    daze = loadLog(log)
+    if cron is not None:
+        if date.today() in daze.dateDict.keys():
+            sys.exit(1)
+        else:
+            sys.exit(0)
+    click.echo(date.today() in daze.dateDict.keys())
+    return date.today() in daze.dateDict.keys()
 
 
 @cli.command()
@@ -83,3 +100,28 @@ def loadLog(log):
     if log is not None:
         return d.fileToDaze(log)
     return d.fileToDaze()
+
+
+def getPlaceFromDialog():
+    workOrNot = '''
+        tell app "System Events" to display dialog "Working today?" with title "Daze" buttons {"Yes", "No"} default button "Yes"
+    '''
+    workingWhere = '''
+        tell app "System Events" to display dialog "Where?" with title "Daze" buttons {"Guilford", "New York", "Other"} default answer "" default button "Other"
+    '''
+    notWorkingWhy = '''
+        tell app "System Events" to display dialog "Why not?" with title "Daze" buttons {"Weekend", "Holiday", "Other"} default answer "" default button "Weekend"
+    '''
+    def dialogResponseToDict(rawResponse):
+        clipped = str(rawResponse)[2:-3]
+        split = [c.strip().split(':') for c in clipped.split(',')]
+        return {c[0]:c[1] for c in split}
+
+    answer_workOrNot = dialogResponseToDict(subprocess.check_output(['osascript', '-e', workOrNot]))
+    if answer_workOrNot["button returned"] == "Yes":
+        subanswer = dialogResponseToDict(subprocess.check_output(['osascript', '-e', workingWhere]))
+    else:
+        subanswer = dialogResponseToDict(subprocess.check_output(['osascript', '-e', notWorkingWhy]))
+    if subanswer['text returned'] == "":
+        return subanswer['button returned'].lower()
+    return subanswer['text returned'].lower()
