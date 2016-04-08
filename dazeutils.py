@@ -4,7 +4,6 @@ import json
 import sys
 import os
 
-
 locationLog = '/Users/mikayla/Code/sandbox/python/daze/newLocationLog.json'
 
 class Daze:
@@ -80,9 +79,9 @@ def toDate(datestring):
 def fileToDaze(filename):
     if filename is None:
         try:
-            with open(os.path.expanduser("~/.daze/settings.json"), 'r') as f:
+            with open(os.path.expandvars("$DAZE/settings.json"), 'r') as f:
                 settings = json.load(f)
-            filename = os.path.expanduser(settings['log'])
+            filename = os.path.expandvars(settings['log'])
         except:
             print("Had an error getting log file from settings.")
             filename = locationLog
@@ -93,9 +92,9 @@ def fileToDaze(filename):
 def dazeToFile(daze, filename):
     if filename is None:
         try:
-            with open(os.path.expanduser("~/.daze/settings.json"), 'r') as f:
+            with open(os.path.expandvars("$DAZE/settings.json"), 'r') as f:
                 settings = json.load(f)
-            filename = os.path.expanduser(settings['log'])
+            filename = os.path.expandvars(settings['log'])
         except:
             print("Had an error getting log file from settings.")
             filename = locationLog
