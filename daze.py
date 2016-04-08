@@ -14,7 +14,7 @@ def cli():
 @click.option('--log', type=click.Path(exists=True))
 @click.option('--month', '-m', type=click.INT)
 def summary(log, month):
-    daze = loadLog(log)
+    daze = d.fileToDaze(log)
     if (month is not None):
         year = date.today().year
         first = date(year, month, 1)
@@ -33,28 +33,24 @@ def summary(log, month):
     if missing_days > 0:
         click.secho("with %d missing days." % missing_days, bg='red')
 
-
 @cli.command()
 @click.argument('place', required=False)
 @click.argument('strdate', required=False)
 @click.option('--log', type=click.Path(exists=True))
 def add(place, strdate, log):
-    daze = loadLog(log)
+    daze = d.fileToDaze(log)
     if place is None:
         place = getPlaceFromDialog()
     if strdate is None:
         strdate = date.today().isoformat()
     daze.add(strdate, place)
-    if log is None:
-        d.dazeToFile(daze)
-    else:
-        d.dazeToFile(daze, log)
+    d.dazeToFile(daze, log)
 
 @cli.command()
 @click.option('--cron')
 @click.option('--log', type=click.Path(exists=True))
 def checkToday(cron, log):
-    daze = loadLog(log)
+    daze = d.fileToDaze(log)
     if cron is not None:
         if date.today() in daze.dateDict.keys():
             sys.exit(1)
@@ -67,7 +63,7 @@ def checkToday(cron, log):
 @cli.command()
 @click.option('--log', type=click.Path(exists=True))
 def calendar(log):
-    daze = loadLog(log)
+    daze = d.fileToDaze(log)
     log = daze.dateDict
     s, ndates, firstdate, lastdate = daze.summarize()
     places = sorted(s, key=s.get, reverse=True)
@@ -94,17 +90,18 @@ def calendar(log):
 
     click.echo('\n\n\n')
 
-
-
-def loadLog(log):
-    if log is not None:
-        return d.fileToDaze(log)
-    return d.fileToDaze()
+# @cli.command()
+# @click.option('--log', type=click.Path(exists=True))
+# @click.option('strdate', required=True)
+# def remove(strdate, log):
+    # daze = d.fileToDaze(log)
+    # daze.remove(strdate)
+    # d.dazeToFile(daze, filename)
 
 
 def getPlaceFromDialog():
     workOrNot = '''
-        tell app "System Events" to display dialog "Working today?" with title "Daze" buttons {"Yes", "No"} default button "Yes"
+        tell app "System Events" to display dialog "Working today?" with title "Daze" buttons {"Yes", "No"} default button "Yes" giving up after 15
     '''
     workingWhere = '''
         tell app "System Events" to display dialog "Where?" with title "Daze" buttons {"Guilford", "New York", "Other"} default answer "" default button "Other"

@@ -2,6 +2,7 @@ from datetime import date
 from datetime import timedelta
 import json
 import sys
+import os
 
 
 locationLog = '/Users/mikayla/Code/sandbox/python/daze/newLocationLog.json'
@@ -76,12 +77,28 @@ def toDate(datestring):
     return date(*[int(x) for x in datestring.split('-')])
 
 
-def fileToDaze(filename=locationLog):
+def fileToDaze(filename):
+    if filename is None:
+        try:
+            with open(os.path.expanduser("~/.daze/settings.json"), 'r') as f:
+                settings = json.load(f)
+            filename = os.path.expanduser(settings['log'])
+        except:
+            print("Had an error getting log file from settings.")
+            filename = locationLog
     with open(filename, 'r') as f:
         data = json.load(f)
     return Daze(data)
 
-def dazeToFile(daze, filename=locationLog):
+def dazeToFile(daze, filename):
+    if filename is None:
+        try:
+            with open(os.path.expanduser("~/.daze/settings.json"), 'r') as f:
+                settings = json.load(f)
+            filename = os.path.expanduser(settings['log'])
+        except:
+            print("Had an error getting log file from settings.")
+            filename = locationLog
     with open(filename, 'w') as f:
         json.dump(daze.serialize(), f)
 
