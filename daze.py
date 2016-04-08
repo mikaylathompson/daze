@@ -6,15 +6,21 @@ import sys
 
 
 @click.group()
-def cli():
+@click.option('--log', type=click.Path(exists=True))
+@click.pass_context
+def cli(ctx, log):
+    # cli(obj={})
+    ctx.obj = dict()
+    ctx.obj['log'] = log
+    ctx.obj['daze'] = d.fileToDaze(log)
     pass
 
 
 @cli.command()
-@click.option('--log', type=click.Path(exists=True))
 @click.option('--month', '-m', type=click.INT)
-def summary(log, month):
-    daze = d.fileToDaze(log)
+@click.pass_context
+def summary(ctx, month):
+    daze = ctx.obj['daze']
     if (month is not None):
         year = date.today().year
         first = date(year, month, 1)
@@ -33,24 +39,25 @@ def summary(log, month):
     if missing_days > 0:
         click.secho("with %d missing days." % missing_days, bg='red')
 
+
 @cli.command()
 @click.argument('place', required=False)
 @click.argument('strdate', required=False)
-@click.option('--log', type=click.Path(exists=True))
-def add(place, strdate, log):
-    daze = d.fileToDaze(log)
+@click.pass_context
+def add(ctx, place, strdate):
+    daze = ctx.obj['daze']
     if place is None:
         place = getPlaceFromDialog()
     if strdate is None:
         strdate = date.today().isoformat()
     daze.add(strdate, place)
-    d.dazeToFile(daze, log)
+    d.dazeToFile(daze, ctx.obj['log'])
 
 @cli.command()
 @click.option('--cron')
-@click.option('--log', type=click.Path(exists=True))
-def checkToday(cron, log):
-    daze = d.fileToDaze(log)
+@click.pass_context
+def checkToday(ctx, cron):
+    daze = ctx.obj['daze']
     if cron is not None:
         if date.today() in daze.dateDict.keys():
             sys.exit(1)
@@ -61,9 +68,9 @@ def checkToday(cron, log):
 
 
 @cli.command()
-@click.option('--log', type=click.Path(exists=True))
-def calendar(log):
-    daze = d.fileToDaze(log)
+@click.pass_context
+def calendar(ctx):
+    daze = ctx.obj['daze']
     log = daze.dateDict
     s, ndates, firstdate, lastdate = daze.summarize()
     places = sorted(s, key=s.get, reverse=True)
@@ -91,12 +98,15 @@ def calendar(log):
     click.echo('\n\n\n')
 
 # @cli.command()
-# @click.option('--log', type=click.Path(exists=True))
 # @click.option('strdate', required=True)
-# def remove(strdate, log):
-    # daze = d.fileToDaze(log)
+# def remove(ctx, strdate):
     # daze.remove(strdate)
     # d.dazeToFile(daze, filename)
+
+@cli.command()
+@click.pass_context
+def setup(ctx):
+    click.echo("Not yet implemented.")
 
 
 def getPlaceFromDialog():
@@ -122,3 +132,7 @@ def getPlaceFromDialog():
     if subanswer['text returned'] == "":
         return subanswer['button returned'].lower()
     return subanswer['text returned'].lower()
+
+
+# if __name__=='__main__':
+    # cli(obj={})
