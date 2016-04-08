@@ -4,12 +4,10 @@ from datetime import date, timedelta
 import subprocess
 import sys
 
-
 @click.group()
-@click.option('--log', type=click.Path(exists=True))
+@click.option('--log', type=click.Path(exists=True), help="Select a log. Default is the one specified in $DAZE/settings.json.")
 @click.pass_context
 def cli(ctx, log):
-    # cli(obj={})
     ctx.obj = dict()
     ctx.obj['log'] = log
     ctx.obj['daze'] = d.fileToDaze(log)
@@ -17,9 +15,10 @@ def cli(ctx, log):
 
 
 @cli.command()
-@click.option('--month', '-m', type=click.INT)
+@click.option('--month', '-m', type=click.INT, help="Show summary for a specific month (in the current year).")
 @click.pass_context
 def summary(ctx, month):
+    """Show a summary of all logged days that includes days in each location, as well as if any days are missing."""
     daze = ctx.obj['daze']
     if (month is not None):
         year = date.today().year
@@ -45,6 +44,7 @@ def summary(ctx, month):
 @click.argument('strdate', required=False)
 @click.pass_context
 def add(ctx, place, strdate):
+    """Add (or overwrite) an entry to the log. Enter the place followed by the date as YYYY-MM-DD."""
     daze = ctx.obj['daze']
     if place is None:
         place = getPlaceFromDialog()
@@ -54,9 +54,10 @@ def add(ctx, place, strdate):
     d.dazeToFile(daze, ctx.obj['log'])
 
 @cli.command()
-@click.option('--cron')
+@click.option('--cron', help="If cron is on, there is no output but the exit value is non-zero if today has not been logged.")
 @click.pass_context
 def checkToday(ctx, cron):
+    """Check whether today has been logged.  Returns true/false."""
     daze = ctx.obj['daze']
     if cron is not None:
         if date.today() in daze.dateDict.keys():
@@ -70,6 +71,7 @@ def checkToday(ctx, cron):
 @cli.command()
 @click.pass_context
 def calendar(ctx):
+    """Display a calendar of all logged dates."""
     daze = ctx.obj['daze']
     log = daze.dateDict
     s, ndates, firstdate, lastdate = daze.summarize()
@@ -133,6 +135,3 @@ def getPlaceFromDialog():
         return subanswer['button returned'].lower()
     return subanswer['text returned'].lower()
 
-
-# if __name__=='__main__':
-    # cli(obj={})
