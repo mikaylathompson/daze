@@ -69,12 +69,19 @@ def checkToday(ctx, cron):
 
 
 @cli.command()
+@click.option('--month', '-m', type=click.INT, help="Show summary for a specific month (in the current year).")
 @click.pass_context
-def calendar(ctx):
+def calendar(ctx, month):
     """Display a calendar of all logged dates."""
     daze = ctx.obj['daze']
     log = daze.dateDict
-    s, ndates, firstdate, lastdate = daze.summarize()
+    if (month is not None):
+        year = date.today().year
+        first = date(year, month, 1)
+        last = date(year, month + 1, 1) - timedelta(days=1)
+        s, ndates, firstdate, lastdate = daze.summarize(firstdate=first, lastdate=last)
+    else:
+        s, ndates, firstdate, lastdate = daze.summarize()
     places = sorted(s, key=s.get, reverse=True)
     colors = ['green', 'magenta', 'white', 'cyan', 'blue', 'red', 'yellow']
     months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -85,17 +92,17 @@ def calendar(ctx):
     for (p, c) in matches.items():
         click.secho(p, bg=c, bold=True)
 
-    for date in dates:
-        if (date.day == 1 or date == firstdate):
+    for _date in dates:
+        if (_date.day == 1 or _date == firstdate):
             click.echo('')
-            click.echo("\n" + months[date.month - 1])
-            if (date.isoweekday() != 7):
-                click.echo(" " * 3 * date.isoweekday(), nl=False)
-        if date in log:
-            p = log[date]
-            click.secho("%s" % str(date.day).rjust(3), bg=matches[p], nl=(date.isoweekday() == 6))
+            click.echo("\n" + months[_date.month - 1])
+            if (_date.isoweekday() != 7):
+                click.echo(" " * 3 * _date.isoweekday(), nl=False)
+        if _date in log:
+            p = log[_date]
+            click.secho("%s" % str(_date.day).rjust(3), bg=matches[p], nl=(_date.isoweekday() == 6))
         else:
-            click.secho("%s" % str(date.day).rjust(3), nl=(date.isoweekday() == 6))
+            click.secho("%s" % str(_date.day).rjust(3), nl=(_date.isoweekday() == 6))
 
     click.echo('\n\n\n')
 
