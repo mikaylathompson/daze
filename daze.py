@@ -68,12 +68,9 @@ def checkToday(ctx, cron):
     return date.today() in daze.dateDict.keys()
 
 
-@cli.command()
-@click.option('--month', '-m', type=click.INT, help="Show summary for a specific month (in the current year).")
-@click.pass_context
-def calendar(ctx, month):
+# Poor man's implementation of an alias
+def display_calendar(daze, month):
     """Display a calendar of all logged dates."""
-    daze = ctx.obj['daze']
     log = daze.dateDict
     if (month is not None):
         year = date.today().year
@@ -105,6 +102,19 @@ def calendar(ctx, month):
             click.secho("%s" % str(_date.day).rjust(3), fg='black', nl=(_date.isoweekday() == 6))
 
     click.echo('\n\n\n')
+
+# alias cal to calendar
+@cli.command()
+@click.option('--month', '-m', type=click.INT, help="Show summary for a specific month (in the current year).")
+@click.pass_context
+def cal(ctx, month):
+    display_calendar(ctx.obj['daze'], month)
+
+@cli.command()
+@click.option('--month', '-m', type=click.INT, help="Show summary for a specific month (in the current year).")
+@click.pass_context
+def calendar(ctx, month):
+    display_calendar(ctx.obj['daze'], month)
 
 
 @cli.command()
