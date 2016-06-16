@@ -118,8 +118,7 @@ def calendar(ctx, month):
 
 
 @cli.command()
-@click.option('strdate', required=True)
-def remove(ctx, strdate):
+def remove(ctx):
     click.echo("Not yet implemented.")
 
 @cli.command()
