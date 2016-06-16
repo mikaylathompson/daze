@@ -100,9 +100,9 @@ def calendar(ctx, month):
                 click.echo(" " * 3 * _date.isoweekday(), nl=False)
         if _date in log:
             p = log[_date]
-            click.secho("%s" % str(_date.day).rjust(3), bg=matches[p], nl=(_date.isoweekday() == 6))
+            click.secho("%s" % str(_date.day).rjust(3), fg='black', bg=matches[p], nl=(_date.isoweekday() == 6))
         else:
-            click.secho("%s" % str(_date.day).rjust(3), nl=(_date.isoweekday() == 6))
+            click.secho("%s" % str(_date.day).rjust(3), fg='black', nl=(_date.isoweekday() == 6))
 
     click.echo('\n\n\n')
 
