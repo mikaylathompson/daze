@@ -106,15 +106,20 @@ def calendar(ctx, month):
 
     click.echo('\n\n\n')
 
-# @cli.command()
-# @click.option('strdate', required=True)
-# def remove(ctx, strdate):
-    # daze.remove(strdate)
-    # d.dazeToFile(daze, filename)
+
+@cli.command()
+@click.option('strdate', required=True)
+def remove(ctx, strdate):
+    click.echo("Not yet implemented.")
 
 @cli.command()
 @click.pass_context
 def setup(ctx):
+    click.echo("Not yet implemented.")
+
+@cli.command()
+@click.pass_context
+def backup(ctx):
     click.echo("Not yet implemented.")
 
 
