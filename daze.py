@@ -1,11 +1,15 @@
 import click
-import dazeutils as d
+import calendar as cal
 from datetime import date, timedelta
 import subprocess
 import sys
 
+import dazeutils as d
+
 @click.group()
-@click.option('--log', type=click.Path(exists=True), help="Select a log. Default is the one specified in $DAZE/settings.json.")
+@click.option('--log',
+            type=click.Path(exists=True),
+            help="Select a log. Default is the one specified in $DAZE/settings.json.")
 @click.pass_context
 def cli(ctx, log):
     ctx.obj = dict()
@@ -15,10 +19,13 @@ def cli(ctx, log):
 
 
 @cli.command()
-@click.option('--month', '-m', type=click.INT, help="Show summary for a specific month (in the current year).")
+@click.option('--month', '-m',
+        type=click.INT,
+        help="Show summary for a specific month (in the current year).")
 @click.pass_context
 def summary(ctx, month):
-    """Show a summary of all logged days that includes days in each location, as well as if any days are missing."""
+    """Show a summary of all logged days that includes days in each location,
+    as well as if any days are missing."""
     daze = ctx.obj['daze']
     if (month is not None):
         year = date.today().year
@@ -44,7 +51,8 @@ def summary(ctx, month):
 @click.argument('strdate', required=False)
 @click.pass_context
 def add(ctx, place, strdate):
-    """Add (or overwrite) an entry to the log. Enter the place followed by the date as YYYY-MM-DD."""
+    """Add (or overwrite) an entry to the log.
+    Enter the place followed by the date as YYYY-MM-DD."""
     daze = ctx.obj['daze']
     if place is None:
         place = getPlaceFromDialog()
@@ -54,7 +62,9 @@ def add(ctx, place, strdate):
     d.dazeToFile(daze, ctx.obj['log'])
 
 @cli.command()
-@click.option('--cron', help="If cron is on, there is no output but the exit value is non-zero if today has not been logged.")
+@click.option('--cron',
+        help="""If cron is on, there is no output but the exit value
+        is non-zero if today has not been logged.""")
 @click.pass_context
 def checkToday(ctx, cron):
     """Check whether today has been logged.  Returns true/false."""
@@ -72,7 +82,7 @@ def checkToday(ctx, cron):
 def display_calendar(daze, month):
     """Display a calendar of all logged dates."""
     log = daze.dateDict
-    if (month is not None):
+    if month is not None:
         year = date.today().year
         first = date(year, month, 1)
         last = date(year, month + 1, 1) - timedelta(days=1)
@@ -81,13 +91,14 @@ def display_calendar(daze, month):
         s, ndates, firstdate, lastdate = daze.summarize()
     places = sorted(s, key=s.get, reverse=True)
     colors = ['green', 'magenta', 'white', 'cyan', 'blue', 'red', 'yellow']
-    months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+              'August', 'September', 'October', 'November', 'December']
     dates = [firstdate + timedelta(days=i) for i in range((lastdate - firstdate).days + 1)]
 
     matches = {p:c for (p, c) in zip(places, colors)}
 
     for (p, c) in matches.items():
-        click.secho(p, bg=c, bold=True)
+        click.secho(" %s " % p, bg=c, fg='black', bold=True)
 
     for _date in dates:
         if (_date.day == 1 or _date == firstdate):
@@ -97,29 +108,69 @@ def display_calendar(daze, month):
                 click.echo(" " * 3 * _date.isoweekday(), nl=False)
         if _date in log:
             p = log[_date]
-            click.secho("%s" % str(_date.day).rjust(3), fg='black', bg=matches[p], nl=(_date.isoweekday() == 6))
+            click.secho("%s" % str(_date.day).rjust(3),
+                            fg='black',
+                            bg=matches[p],
+                            nl=(_date.isoweekday() == 6))
         else:
-            click.secho("%s" % str(_date.day).rjust(3), fg='black', nl=(_date.isoweekday() == 6))
+            click.secho("%s" % str(_date.day).rjust(3),
+                            fg='black', nl=(_date.isoweekday() == 6))
 
     click.echo('\n\n\n')
 
+
+def display_calendar_redo(daze, year, month):
+    """ Display a calendar of all logged dates.
+    If year is specified, display only months of that year.
+    If month is specified display only that month of current (or specified) year.
+    """
+    log = daze.dateDict
+
+    # Set first and last dates
+    if year is None:
+        year = date.today().year
+    if month is None:
+        first = date(year, 1, 1)
+        if year == date.today().year:
+            last = date.today()
+        else:
+            last = date(year, 12, 31)
+    else:
+        first = date(year, month, 1)
+        last = date(2016, month, cal.monthrange(2016, month)[1])
+
+    # Get summarized data
+    s, ndates, firstdate, lastdate = daze.summarize()
+    places = sorted(s, key=s.get, reverse=True)
+    colors = ['green', 'magenta', 'white', 'cyan', 'blue', 'red', 'yellow']
+
+
+
+
 # alias cal to calendar
 @cli.command()
-@click.option('--month', '-m', type=click.INT, help="Show summary for a specific month (in the current year).")
+@click.option('--month', '-m',
+        type=click.INT,
+        help="Show summary for a specific month (in the current year).")
 @click.pass_context
 def cal(ctx, month):
     display_calendar(ctx.obj['daze'], month)
 
 @cli.command()
-@click.option('--month', '-m', type=click.INT, help="Show summary for a specific month (in the current year).")
+@click.option('--month', '-m',
+        type=click.INT,
+        help="Show summary for a specific month (in the current year).")
 @click.pass_context
 def calendar(ctx, month):
     display_calendar(ctx.obj['daze'], month)
 
 
 @cli.command()
-def remove(ctx):
-    click.echo("Not yet implemented.")
+@click.argument('strdate', required=True)
+@click.pass_context
+def remove(ctx, strdate):
+    ctx.obj['daze'].remove(strdate)
+    d.dazeToFile(ctx.obj['daze'], ctx.obj['log'])
 
 @cli.command()
 @click.pass_context
