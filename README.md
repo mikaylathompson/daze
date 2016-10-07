@@ -26,8 +26,17 @@ It also has a visual calendar mode.
 3. Errors are easy to find with the calendar/summary mode and can be fixed through the interface by just doing a `daze add weekend 2016-04-09`, for instance.  Additionally, the storage format is a json that makes for very easy manual editing.
 
 
+### Usage example:
+
+```shell
+$ daze add 2016-06-15 guilford
+$ daze summary
+
+
 
 ### Improvements
+- [ ] Implement a good frontend interface!
+- [ ] Turns out there's a calendar module! Should definitely be used for my cal function.
 - [ ] Build the setup function (create a ~/.daze directory with a log, backups, and settings, possibly cron job)
 - [ ] Add a cli backup function
 - [ ] Refactor out the apple dialogs
