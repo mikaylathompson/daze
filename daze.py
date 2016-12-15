@@ -1,5 +1,5 @@
 import click
-import calendar as cal
+import calendar
 from datetime import date, timedelta
 import subprocess
 import sys
@@ -61,6 +61,7 @@ def add(ctx, place, strdate):
     daze.add(strdate, place)
     d.dazeToFile(daze, ctx.obj['log'])
 
+
 @cli.command()
 @click.option('--cron',
         help="""If cron is on, there is no output but the exit value
@@ -95,13 +96,13 @@ def display_calendar(daze, month):
               'August', 'September', 'October', 'November', 'December']
     dates = [firstdate + timedelta(days=i) for i in range((lastdate - firstdate).days + 1)]
 
-    matches = {p:c for (p, c) in zip(places, colors)}
+    matches = {p: c for (p, c) in zip(places, colors)}
 
     for (p, c) in matches.items():
         click.secho(" %s " % p, bg=c, fg='black', bold=True)
 
     for _date in dates:
-        if (_date.day == 1 or _date == firstdate):
+        if _date.day == 1 or _date == firstdate:
             click.echo('')
             click.echo("\n" + months[_date.month - 1])
             if (_date.isoweekday() != 7):
@@ -137,7 +138,7 @@ def display_calendar_redo(daze, year, month):
             last = date(year, 12, 31)
     else:
         first = date(year, month, 1)
-        last = date(2016, month, cal.monthrange(2016, month)[1])
+        last = date(2016, month, calendar.monthrange(2016, month)[1])
 
     # Get summarized data
     s, ndates, firstdate, lastdate = daze.summarize()
@@ -172,10 +173,12 @@ def remove(ctx, strdate):
     ctx.obj['daze'].remove(strdate)
     d.dazeToFile(ctx.obj['daze'], ctx.obj['log'])
 
+
 @cli.command()
 @click.pass_context
 def setup(ctx):
     click.echo("Not yet implemented.")
+
 
 @cli.command()
 @click.pass_context
@@ -193,6 +196,7 @@ def getPlaceFromDialog():
     notWorkingWhy = '''
         tell app "System Events" to display dialog "Why not?" with title "Daze" buttons {"Weekend", "Holiday", "Other"} default answer "" default button "Weekend"
     '''
+
     def dialogResponseToDict(rawResponse):
         clipped = str(rawResponse)[2:-3]
         split = [c.strip().split(':') for c in clipped.split(',')]

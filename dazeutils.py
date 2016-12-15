@@ -11,7 +11,6 @@ class Daze:
         self.json = json
         self.deserialize(json)
 
-
     def findPlace(self, placename):
         for (p, alts) in self.places.items():
             if placename == p:
@@ -20,12 +19,10 @@ class Daze:
                 return p
         return None
 
-
     def serialize(self):
         return {'places': self.places,
                 'log': {k.isoformat():v for (k, v) in self.dateDict.items()}
                }
-
 
     def deserialize(self, dazejson):
         self.places = dazejson['places']
@@ -38,7 +35,6 @@ class Daze:
                 print(p)
                 print(self.findPlace(p))
 
-
     def add(self, indate, place):
         if type(indate) is str:
             indate = toDate(indate)
@@ -48,13 +44,11 @@ class Daze:
         self.dateDict[indate] = place
         self.placeDict[place].append(indate)
 
-
     def remove(self, outdate):
         if type(outdate) is str:
             outdate = toDate(outdate)
         place = self.dateDict.pop(outdate)
         self.placeDict[place].remove(outdate)
-
 
     def summarize(self, firstdate=date.min, lastdate=date.max):
         summary = {}
@@ -68,8 +62,6 @@ class Daze:
         actuallast = min(lastdate, max(self.dateDict.keys()))
 
         return summary, sum(summary.values()), actualfirst, actuallast
-
-
 
 
 def toDate(datestring):
@@ -88,6 +80,7 @@ def fileToDaze(filename):
     with open(filename, 'r') as f:
         data = json.load(f)
     return Daze(data)
+
 
 def dazeToFile(daze, filename):
     if filename is None:
