@@ -42,3 +42,27 @@ $ daze summary
 - [ ] Refactor out the apple dialogs
 - [ ] Write up install instructions
 - [ ] Implement the remove date function
+
+
+# Musings on new Frontend interface:
+
+`daze.py` should just be the API.  It should have `add`, `cal`, `summary`, etc. functions that return
+nicely formatted data, without actually printing it (basically a somewhat more wrapped up version of
+dazeutils, that doesn't have to know much about the underlying data. (in some ways, dazeutils is the
+potentially-interchangable backend, the frontends are interchangable, and `daze.py` is the non-interchangable
+glue between them.
+
+Likely, the frontend will need a copy of the daze interface (object?) and daze interface needs the frontend.
+(i.e. this is a two way link, not just daze calling frontend functions.)
+
+-   In the daze-->frontend direction: display data (cal/summary), request information (location for add)
+-   In the frontend-->daze direction: initiate actions (add, get summary, get cal data)
+
+Perhaps have a 4th piece: a runner. Selects a frontend and connects it to daze
+
+
+
+
+
+
+

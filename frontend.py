@@ -24,6 +24,10 @@ class ConsoleFrontend(Frontend):
     def input(self, prompt):
         return input(prompt + " ")
 
+class ApplescriptFrontend(Frontend):
+    pass
+
+
 class LuaFrontend(Frontend):
     pass
 
