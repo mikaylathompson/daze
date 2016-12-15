@@ -15,6 +15,8 @@ My goal was to minimize the chance I would miss a day, have stats available for 
 
 Summary lists number of days in each location, the earliest and latest dates in the logs, and whether any dates are missing.
 
+[A visual (asciinema) demo](https://asciinema.org/a/cg01t7aj5lv9u53f8jeggja8d)
+
 ![Successful summary](examples/summary.png)
 
 ![Summary with missing days](examples/summary_missing.png)
