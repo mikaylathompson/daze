@@ -3,8 +3,11 @@ import calendar
 from datetime import date, timedelta
 import subprocess
 import sys
+import re
 
 import dazeutils as d
+
+cal = calendar.Calendar()
 
 @click.group()
 @click.option('--log',
@@ -21,16 +24,20 @@ def cli(ctx, log):
 @cli.command()
 @click.option('--month', '-m',
         type=click.INT,
-        help="Show summary for a specific month (in the current year).")
+        help="Show summary for a specific month (in the current or specified year).")
+@click.option('--year', '-y',
+        type=click.INT,
+        help="Show the summary for a specific year.")
 @click.pass_context
-def summary(ctx, month):
+def summary(ctx, month, year):
     """Show a summary of all logged days that includes days in each location,
     as well as if any days are missing."""
     daze = ctx.obj['daze']
-    if (month is not None):
-        year = date.today().year
+    if not year:
+        year = date.today().year  # defaults to this year
+    if month:
         first = date(year, month, 1)
-        last = date(year, month + 1, 1) - timedelta(days=1)
+        last = max([day for day in cal.itermonthdates(year, month) if day.month == month])
         s = daze.summarize(firstdate=first, lastdate=last)
     else:
         s = daze.summarize()
@@ -58,6 +65,16 @@ def add(ctx, place, strdate):
         place = getPlaceFromDialog()
     if strdate is None:
         strdate = date.today().isoformat()
+    else:
+        # Check whether the arguments are maybe switched
+        if re.match(r"[A-z]+", strdate):
+            print("Arguments may have been inverted.  Assuming {} is the date.".format(place), file=sys.stderr)
+            place, strdate = strdate, place
+        if re.match(r"\d{2}-\d{2}", strdate):
+            strdate = str(date.today().year) + "-" + strdate
+            print(strdate)
+            print("\n\n")
+
     daze.add(strdate, place)
     d.dazeToFile(daze, ctx.obj['log'])
 
@@ -80,20 +97,20 @@ def checkToday(ctx, cron):
 
 
 # Poor man's implementation of an alias
-def display_calendar(daze, month):
+def display_calendar(daze, month, year):
     """Display a calendar of all logged dates."""
     log = daze.dateDict
-    if month is not None:
-        year = date.today().year
+    if not year:
+        year = date.today().year  # defaults to this year
+    if month:
         first = date(year, month, 1)
-        last = date(year, month + 1, 1) - timedelta(days=1)
+        last = max([day for day in cal.itermonthdates(year, month) if day.month == month])
         s, ndates, firstdate, lastdate = daze.summarize(firstdate=first, lastdate=last)
     else:
         s, ndates, firstdate, lastdate = daze.summarize()
     places = sorted(s, key=s.get, reverse=True)
     colors = ['green', 'magenta', 'white', 'cyan', 'blue', 'red', 'yellow']
-    months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
-              'August', 'September', 'October', 'November', 'December']
+    months = calendar.month_name[1:]
     dates = [firstdate + timedelta(days=i) for i in range((lastdate - firstdate).days + 1)]
 
     matches = {p: c for (p, c) in zip(places, colors)}
@@ -146,24 +163,29 @@ def display_calendar_redo(daze, year, month):
     colors = ['green', 'magenta', 'white', 'cyan', 'blue', 'red', 'yellow']
 
 
-
-
 # alias cal to calendar
-@cli.command()
+@cli.command('cal')
 @click.option('--month', '-m',
         type=click.INT,
-        help="Show summary for a specific month (in the current year).")
+        help="Show calendar for a specific month (in the current or specified year).")
+@click.option('--year', '-y',
+        type=click.INT,
+        help="Show calendar for a specific year.")
 @click.pass_context
-def cal(ctx, month):
-    display_calendar(ctx.obj['daze'], month)
+def cal_cmd(ctx, month, year):
+    display_calendar(ctx.obj['daze'], month, year)
 
-@cli.command()
+
+@cli.command('calendar')
 @click.option('--month', '-m',
         type=click.INT,
-        help="Show summary for a specific month (in the current year).")
+        help="Show calendar for a specific month (in the current or specified year).")
+@click.option('--year', '-y',
+        type=click.INT,
+        help="Show calendar for a specific year.")
 @click.pass_context
-def calendar(ctx, month):
-    display_calendar(ctx.obj['daze'], month)
+def calendar_cmd(ctx, month, year):
+    display_calendar(ctx.obj['daze'], month, year)
 
 
 @cli.command()
